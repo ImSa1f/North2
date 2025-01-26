@@ -1,4 +1,3 @@
-print('aa')
 
 if UseUi then
     local BASE_WIDTH, BASE_HEIGHT = 1920, 1080
