@@ -1,4 +1,5 @@
-print('eeee')
+print('ez')
+print('aa')
 
 if UseUi then
     local BASE_WIDTH, BASE_HEIGHT = 1920, 1080
@@ -2396,7 +2397,8 @@ if UseUi then
                         return InputFunctions
                     end
 
-                --[[
+
+                    --[[
                     function SectionFunctions:Keybind(Settings, Flag)
                         local KeybindFunctions = { Settings = Settings, IgnoreConfig = false, Class = "Keybind" }
                         local keybind = Instance.new("Frame")
@@ -2528,7 +2530,6 @@ if UseUi then
                                 end)
                             else
                                 -- here fix cuh
-                                --[[
                                 if not reset and (inp.KeyCode == binded or inp.UserInputType == binded) then
                                     if KeybindFunctions.Settings.Callback then
                                         KeybindFunctions.Settings.Callback(binded)
@@ -2539,22 +2540,6 @@ if UseUi then
                                 else
                                     reset = false
                                 end
-                            end
-                            
-                            if inp.KeyCode == binded or inp.UserInputType == binded then
-                                if not reset then
-                                    reset = true
-                            
-                                    if KeybindFunctions.Settings.Callback then
-                                        KeybindFunctions.Settings.Callback(binded) 
-                                    end
-                            
-                                    if KeybindFunctions.Settings.onBindHeld then
-                                        KeybindFunctions.Settings.onBindHeld(true, binded) 
-                                    end
-                                end
-                            else
-                                reset = false
                             end
                         end
                         end)
@@ -2599,6 +2584,7 @@ if UseUi then
                         return KeybindFunctions
                     end
                     --]]
+
                     function SectionFunctions:Keybind(Settings, Flag)
                         local KeybindFunctions = { Settings = Settings, IgnoreConfig = false, Class = "Keybind" }
                         local keybind = Instance.new("Frame")
@@ -2653,19 +2639,19 @@ if UseUi then
                     
                         binderBox.Parent = keybind
                     
-                        local binded = KeybindFunctions.Settings.Default
-                        if binded then
-                            binderBox.Text = binded.Name
-                        end
-                    
                         local focused = false
                         local isBinding = false
                         local reset = false
+                        local binded = KeybindFunctions.Settings.Default
                     
                         local function resetFocusState()
                             focused = false
                             isBinding = false
                             binderBox:ReleaseFocus()
+                        end
+                    
+                        if binded then
+                            binderBox.Text = binded.Name
                         end
                     
                         binderBox.Focused:Connect(function()
@@ -2677,44 +2663,9 @@ if UseUi then
                         end)
                     
                         UserInputService.InputBegan:Connect(function(inp)
-                            if focused and not isBinding then
-                                isBinding = true
-                    
-                                local Event
-                                Event = UserInputService.InputBegan:Connect(function(input)
-                                    if input.UserInputType == Enum.UserInputType.Keyboard then
-                                        binded = input.KeyCode
-                                        binderBox.Text = input.KeyCode.Name
-                                    elseif input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseButton2 then
-                                        binded = input.UserInputType
-                                        binderBox.Text = input.UserInputType.Name
-                                    end
-                    
-                                    if KeybindFunctions.Settings.onBinded then
-                                        KeybindFunctions.Settings.onBinded(binded)
-                                    end
-                    
-                                    reset = true
-                                    resetFocusState()
-                                    Event:Disconnect()
-                                end)
-                            elseif inp.KeyCode == binded or inp.UserInputType == binded then
-                                if not reset then
-                                    reset = true
-                    
-                                    if KeybindFunctions.Settings.Callback then
-                                        KeybindFunctions.Settings.Callback(binded)
-                                    end
-                                end
-                            else
-                                reset = false
-                            end
-                        end)
-                    
-                        UserInputService.InputEnded:Connect(function(inp)
                             if inp.KeyCode == binded or inp.UserInputType == binded then
-                                if KeybindFunctions.Settings.onBindHeld then
-                                    KeybindFunctions.Settings.onBindHeld(false, binded)
+                                if KeybindFunctions.Settings.Callback then
+                                    KeybindFunctions.Settings.Callback(binded)
                                 end
                             end
                         end)
@@ -2741,12 +2692,27 @@ if UseUi then
                             keybind.Visible = State
                         end
                     
+                        function KeybindFunctions:Save()
+                            return { bind = (binded and binded.Name) or nil }
+                        end
+                    
+                        function KeybindFunctions:Load(data)
+                            if data and data.bind then
+                                local keyEnum = Enum.KeyCode[data.bind] or Enum.UserInputType[data.bind]
+                                if keyEnum then
+                                    binded = keyEnum
+                                    binderBox.Text = keyEnum.Name
+                                end
+                            end
+                        end
+                    
                         if Flag then
                             MacLib.Options[Flag] = KeybindFunctions
                         end
                     
                         return KeybindFunctions
                     end
+                
                     
 
                     function SectionFunctions:Dropdown(Settings, Flag)
@@ -5886,14 +5852,14 @@ if UseUi then
             ["Keybind"] = {
                 Save = function(Flag, data)
                     return {
-                        type = "Keybind", 
-                        flag = Flag, 
-                        bind = (typeof(data.Bind) == "EnumItem" and data.Bind.Name) or nil
+                        type = "Keybind",
+                        flag = Flag,
+                        bind = (data.Bind and data.Bind.Name) or nil
                     }
                 end,
                 Load = function(Flag, data)
                     if MacLib.Options[Flag] and data.bind then
-                        MacLib.Options[Flag]:Bind(Enum.KeyCode[data.bind])
+                        MacLib.Options[Flag]:Bind(Enum.KeyCode[data.bind] or Enum.UserInputType[data.bind])
                     end
                 end
             },
