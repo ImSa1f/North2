@@ -1,3 +1,4 @@
+print('yo')
 
 if UseUi then
     local BASE_WIDTH, BASE_HEIGHT = 1920, 1080
@@ -3137,8 +3138,8 @@ if UseUi then
                                         for _, opt in ipairs(Selected) do
                                             Return[opt] = true
                                         end
-                                        if newState and DropdownFunctions.Settings.Callback then
-                                            DropdownFunctions.Settings.Callback(Selected[1] or nil)
+                                        if DropdownFunctions.Settings.Callback then
+                                            DropdownFunctions.Settings.Callback(Return)
                                         end
                                     else
                                         if newState and DropdownFunctions.Settings.Callback then
@@ -3211,7 +3212,6 @@ if UseUi then
                                 if DropdownFunctions.Settings.Multi then
                                     local Return = {}
                                     for _, opt in ipairs(selectedOptions) do
-                                        print(selectedOptions)
                                         Return[opt] = true
                                     end
                                     DropdownFunctions.Settings.Callback(Return)
