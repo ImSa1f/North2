@@ -1,3 +1,4 @@
+print('ice')
 
 if UseUi then
     local BASE_WIDTH, BASE_HEIGHT = 1920, 1080
@@ -3211,6 +3212,7 @@ if UseUi then
                                 if DropdownFunctions.Settings.Multi then
                                     local Return = {}
                                     for _, opt in ipairs(selectedOptions) do
+                                        print(selectedOptions)
                                         Return[opt] = true
                                     end
                                     DropdownFunctions.Settings.Callback(Return)
