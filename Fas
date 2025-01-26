@@ -1,5 +1,4 @@
-print('bb')
-print('aa')
+print('ice')
 
 if UseUi then
     local BASE_WIDTH, BASE_HEIGHT = 1920, 1080
@@ -2408,7 +2407,7 @@ if UseUi then
                         keybind.BorderSizePixel = 0
                         keybind.Size = UDim2.new(1, 0, 0, 38 * scale)
                         keybind.Parent = section
-                    
+
                         local keybindName = Instance.new("TextLabel")
                         keybindName.Name = "KeybindName"
                         keybindName.FontFace = Font.new(assets.interFont)
@@ -2417,16 +2416,20 @@ if UseUi then
                         keybindName.TextColor3 = Color3.fromRGB(255, 255, 255)
                         keybindName.TextSize = 13 * scale
                         keybindName.TextTransparency = 0.5
+                        keybindName.TextTruncate = Enum.TextTruncate.None
                         keybindName.TextWrapped = true
+                        --keybindName.TextTruncate = Enum.TextTruncate.AtEnd
                         keybindName.TextXAlignment = Enum.TextXAlignment.Left
                         keybindName.TextYAlignment = Enum.TextYAlignment.Top
                         keybindName.AnchorPoint = Vector2.new(0, 0.5)
                         keybindName.AutomaticSize = Enum.AutomaticSize.XY
                         keybindName.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
                         keybindName.BackgroundTransparency = 1
+                        keybindName.BorderColor3 = Color3.fromRGB(0, 0, 0)
+                        keybindName.BorderSizePixel = 0
                         keybindName.Position = UDim2.fromScale(0, 0.5)
                         keybindName.Parent = keybind
-                    
+
                         local binderBox = Instance.new("TextBox")
                         binderBox.Name = "BinderBox"
                         binderBox.CursorPosition = -1
@@ -2442,80 +2445,141 @@ if UseUi then
                         binderBox.BackgroundTransparency = 0.95
                         binderBox.BorderColor3 = Color3.fromRGB(0, 0, 0)
                         binderBox.BorderSizePixel = 0
+                        binderBox.ClipsDescendants = true
+                        binderBox.LayoutOrder = 1
                         binderBox.Position = UDim2.fromScale(1, 0.5)
                         binderBox.Size = UDim2.fromOffset(21 * scale, 21 * scale)
-                    
+
                         local binderBoxUICorner = Instance.new("UICorner")
+                        binderBoxUICorner.Name = "BinderBoxUICorner"
                         binderBoxUICorner.CornerRadius = UDim.new(0, 4)
                         binderBoxUICorner.Parent = binderBox
-                    
+
+                        local binderBoxUIStroke = Instance.new("UIStroke")
+                        binderBoxUIStroke.Name = "BinderBoxUIStroke"
+                        binderBoxUIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+                        binderBoxUIStroke.Color = Color3.fromRGB(255, 255, 255)
+                        binderBoxUIStroke.Transparency = 0.9
+                        binderBoxUIStroke.Parent = binderBox
+
+                        local binderBoxUIPadding = Instance.new("UIPadding")
+                        binderBoxUIPadding.Name = "BinderBoxUIPadding"
+                        binderBoxUIPadding.PaddingLeft = UDim.new(0, 5 * scale)
+                        binderBoxUIPadding.PaddingRight = UDim.new(0, 5 * scale)
+                        binderBoxUIPadding.Parent = binderBox
+
+                        local binderBoxUISizeConstraint = Instance.new("UISizeConstraint")
+                        binderBoxUISizeConstraint.Name = "BinderBoxUISizeConstraint"
+                        binderBoxUISizeConstraint.Parent = binderBox
+
                         binderBox.Parent = keybind
-                    
-                        local focused = false
+
+                        local focused
                         local isBinding = false
+                        local reset = false
                         local binded = KeybindFunctions.Settings.Default
-                    
+
                         local function resetFocusState()
                             focused = false
                             isBinding = false
                             binderBox:ReleaseFocus()
                         end
-                    
+
                         if binded then
                             binderBox.Text = binded.Name
                         end
-                    
+
                         binderBox.Focused:Connect(function()
                             focused = true
                         end)
-                    
+
                         binderBox.FocusLost:Connect(function()
                             focused = false
                         end)
-                    
+
                         UserInputService.InputBegan:Connect(function(inp)
-                            if inp.KeyCode == binded or inp.UserInputType == binded then
-                                if KeybindFunctions.Settings.Callback then
-                                    KeybindFunctions.Settings.Callback(binded)
+                            if focused and not isBinding then
+                                isBinding = true
+
+                                local Event
+                                Event = UserInputService.InputBegan:Connect(function(input)
+                                    if KeybindFunctions.Settings.Blacklist and (table.find(KeybindFunctions.KeybindFunctions.Settings.Blacklist, input.KeyCode) or table.find(KeybindFunctions.Settings.Blacklist, input.UserInputType)) then
+                                        binderBox:ReleaseFocus()
+                                        resetFocusState()
+                                        Event:Disconnect()
+                                        return
+                                    end
+
+                                    if input.UserInputType == Enum.UserInputType.Keyboard then
+                                        binded = input.KeyCode
+                                        binderBox.Text = input.KeyCode.Name
+                                    elseif input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseButton2 then
+                                        binded = input.UserInputType
+                                        binderBox.Text = input.UserInputType.Name
+                                    end
+
+                                    if KeybindFunctions.Settings.onBinded then
+                                        KeybindFunctions.Settings.onBinded(binded)
+                                    end
+                                    reset = true
+                                    resetFocusState()
+                                    Event:Disconnect()
+                                end)
+                            else
+                                -- here fix cuh
+                                if not reset and (inp.KeyCode == binded or inp.UserInputType == binded) then
+                                    if KeybindFunctions.Settings.Callback then
+                                        KeybindFunctions.Settings.Callback(binded)
+                                    end
+                                    if KeybindFunctions.Settings.onBindHeld then
+                                        KeybindFunctions.Settings.onBindHeld(true, binded)
+                                    end
+                                else
+                                    reset = false
+                                end
+                            end
+                        end
+                        end)
+
+                        UserInputService.InputEnded:Connect(function(inp)
+                            if not focused and not isBinding then
+                                if inp.KeyCode == binded or inp.UserInputType == binded then
+                                    if Settings.onBindHeld then
+                                        Settings.onBindHeld(false, binded)
+                                    end
                                 end
                             end
                         end)
-                    
+
                         function KeybindFunctions:Bind(Key)
                             binded = Key
                             binderBox.Text = Key.Name
                         end
-                    
+
                         function KeybindFunctions:Unbind()
                             binded = nil
                             binderBox.Text = ""
                         end
-                    
+
                         function KeybindFunctions:GetBind()
                             return binded
                         end
-                    
-                        function KeybindFunctions:Save()
-                            return { bind = (binded and binded.Name) or nil }
+
+                        function KeybindFunctions:UpdateName(Name)
+                            keybindName = Name
                         end
-                    
-                        function KeybindFunctions:Load(data)
-                            if data and data.bind then
-                                local keyEnum = Enum.KeyCode[data.bind] or Enum.UserInputType[data.bind]
-                                if keyEnum then
-                                    binded = keyEnum
-                                    binderBox.Text = keyEnum.Name
-                                end
-                            end
+
+                        function KeybindFunctions:SetVisibility(State)
+                            keybind.Visible = State
                         end
-                    
+
                         if Flag then
                             MacLib.Options[Flag] = KeybindFunctions
                         end
-                    
+
                         return KeybindFunctions
                     end
-                    
+
                     function SectionFunctions:Dropdown(Settings, Flag)
                         local DropdownFunctions = { Settings = Settings, IgnoreConfig = false, Class = "Dropdown" }
                         local Selected = {}
@@ -5655,31 +5719,32 @@ if UseUi then
                     return {
                         type = "Keybind",
                         flag = Flag,
-                        bind = (data.Bind and data.Bind.Name) or nil
+                        bind = (data.GetBind and data:GetBind() and data:GetBind().Name) or nil 
                     }
                 end,
                 Load = function(Flag, data)
                     if MacLib.Options[Flag] and data.bind then
-                        MacLib.Options[Flag]:Bind(Enum.KeyCode[data.bind] or Enum.UserInputType[data.bind])
+                        local keyEnum = Enum.KeyCode[data.bind] or Enum.UserInputType[data.bind]
+                        if keyEnum then
+                            MacLib.Options[Flag]:Bind(keyEnum) 
+                        end
                     end
                 end
-            },
+            },            
             ["Dropdown"] = {
                 Save = function(Flag, data)
                     return {
                         type = "Dropdown",
                         flag = Flag,
-                        value = data.Multi and data.Values or data.Value -- Save `Values` for multi-select or `Value` for single-select
+                        value = data.Multi and data.Values or data.Value
                     }
                 end,
                 Load = function(Flag, data)
                     if MacLib.Options[Flag] then
                         if data.value then
                             if type(data.value) == "table" then
-                                -- For multi-select, update all selected options
                                 MacLib.Options[Flag]:UpdateSelection(data.value)
                             else
-                                -- For single-select, update the selected value
                                 MacLib.Options[Flag]:UpdateSelection({data.value})
                             end
                         end
