@@ -1,3 +1,4 @@
+print('yo')
 
 if UseUi then
     local BASE_WIDTH, BASE_HEIGHT = 1920, 1080
@@ -5030,7 +5031,8 @@ if UseUi then
                     configSection:Button({
                         Name = "Delete Config",
                         Callback = function()
-                            if not configSelection.Value or string.gsub(configSelection.Value, " ", "") == "" then
+                            local selectedConfig = configSelection.Value
+                            if not selectedConfig or selectedConfig == "" then
                                 WindowFunctions:Notify({
                                     Title = "Interface",
                                     Description = "No config selected to delete."
@@ -5038,18 +5040,18 @@ if UseUi then
                                 return
                             end
                     
-                            local success, returned = MacLib:DeleteConfig(configSelection.Value)
+                            local success, returned = MacLib:DeleteConfig(selectedConfig)
                             if not success then
                                 WindowFunctions:Notify({
                                     Title = "Interface",
-                                    Description = "Unable to delete config, return error: " .. returned
+                                    Description = "Unable to delete config, error: " .. tostring(returned)
                                 })
                                 return
                             end
                     
                             WindowFunctions:Notify({
                                 Title = "Interface",
-                                Description = string.format("Deleted config %q", configSelection.Value),
+                                Description = string.format("Deleted config %q", selectedConfig),
                             })
                     
                             configSelection:ClearOptions()
