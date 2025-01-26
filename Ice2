@@ -1,4 +1,4 @@
-print('yo')
+print('aa')
 
 if UseUi then
     local BASE_WIDTH, BASE_HEIGHT = 1920, 1080
@@ -2526,6 +2526,8 @@ if UseUi then
                                     Event:Disconnect()
                                 end)
                             else
+                                -- here fix cuh
+                                --[[
                                 if not reset and (inp.KeyCode == binded or inp.UserInputType == binded) then
                                     if KeybindFunctions.Settings.Callback then
                                         KeybindFunctions.Settings.Callback(binded)
@@ -2536,6 +2538,22 @@ if UseUi then
                                 else
                                     reset = false
                                 end
+                            end
+                            --]]
+                            if inp.KeyCode == binded or inp.UserInputType == binded then
+                                if not reset then
+                                    reset = true
+                            
+                                    if KeybindFunctions.Settings.Callback then
+                                        KeybindFunctions.Settings.Callback(binded) 
+                                    end
+                            
+                                    if KeybindFunctions.Settings.onBindHeld then
+                                        KeybindFunctions.Settings.onBindHeld(true, binded) 
+                                    end
+                                end
+                            else
+                                reset = false
                             end
                         end)
 
@@ -5729,17 +5747,25 @@ if UseUi then
             ["Dropdown"] = {
                 Save = function(Flag, data)
                     return {
-                        type = "Dropdown", 
-                        flag = Flag, 
-                        value = data.Value
+                        type = "Dropdown",
+                        flag = Flag,
+                        value = data.Multi and data.Values or data.Value -- Save `Values` for multi-select or `Value` for single-select
                     }
                 end,
                 Load = function(Flag, data)
-                    if MacLib.Options[Flag] and data.value then
-                        MacLib.Options[Flag]:UpdateSelection(data.value)
+                    if MacLib.Options[Flag] then
+                        if data.value then
+                            if type(data.value) == "table" then
+                                -- For multi-select, update all selected options
+                                MacLib.Options[Flag]:UpdateSelection(data.value)
+                            else
+                                -- For single-select, update the selected value
+                                MacLib.Options[Flag]:UpdateSelection({data.value})
+                            end
+                        end
                     end
                 end
-            },
+            },            
             ["Colorpicker"] = {
                 Save = function(Flag, data)
                     local function Color3ToHex(color)
