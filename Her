@@ -1,3 +1,4 @@
+print('eee')
 print('aa')
 
 if UseUi then
@@ -2396,7 +2397,7 @@ if UseUi then
                         return InputFunctions
                     end
 
-                    --[[
+                --[[
                     function SectionFunctions:Keybind(Settings, Flag)
                         local KeybindFunctions = { Settings = Settings, IgnoreConfig = false, Class = "Keybind" }
                         local keybind = Instance.new("Frame")
@@ -2540,7 +2541,7 @@ if UseUi then
                                     reset = false
                                 end
                             end
-                            --]]
+                            
                             if inp.KeyCode == binded or inp.UserInputType == binded then
                                 if not reset then
                                     reset = true
@@ -2559,6 +2560,7 @@ if UseUi then
                         end
                         end)
 
+                       
                         UserInputService.InputEnded:Connect(function(inp)
                             if not focused and not isBinding then
                                 if inp.KeyCode == binded or inp.UserInputType == binded then
